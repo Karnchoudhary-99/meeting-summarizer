@@ -12,7 +12,7 @@ the first pass. Pure standard library, so it runs anywhere Python does.
 - [x] Action-item + decision extraction (owners, due phrases)
 - [x] Full report (summary, decisions, actions, open questions)
 - [x] CLI + export (text / JSON) + demo transcript
-- [ ] Self-review checklist, then public
+- [x] Self-review checklist passed on a fresh clone (47 tests, demos run, no secrets/TODOs), then public
 
 ## Quick start
 
