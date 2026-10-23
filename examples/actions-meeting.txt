@@ -1,0 +1,7 @@
+[00:00:05] Priya: Welcome to the launch review, everyone.
+[00:00:20] Sara: The team agreed the starter plan stays at nine dollars and the pro plan moves to twenty-nine dollars.
+[00:00:45] Priya: Priya will update the pricing page by Friday.
+[00:01:05] Arjun: I will finish the database migration before Friday.
+[00:01:25] Sara: Assigned to Arjun: draft the rollback plan by end of week.
+[00:01:50] Priya: Who owns weekend cover for launch week?
+[00:02:10] Arjun: We still need to decide the annual discount.

@@ -9,7 +9,8 @@ the first pass. Pure standard library, so it runs anywhere Python does.
 - [x] Project scaffold (packaging, README, CI)
 - [x] Transcript parsing (speaker turns, timestamps, filler cleanup)
 - [x] Extractive summarization (topic segments + key sentences)
-- [ ] Action-item + decision extraction (owners, due phrases)
+- [x] Action-item + decision extraction (owners, due phrases)
+- [x] Full report (summary, decisions, actions, open questions)
 - [x] CLI + export (text / JSON) + demo transcript
 - [ ] Self-review checklist, then public
 
@@ -57,6 +58,29 @@ python -m meeting_summarizer.cli summarize transcript.txt --format json
 # Read from stdin
 cat transcript.txt | python -m meeting_summarizer.cli summarize -
 ```
+
+## Full report
+
+The `report` command adds what a summary alone cannot: decisions the
+meeting settled, action items with owners and due phrases, and questions
+left open (a question answered later in the transcript is dropped).
+
+```bash
+# Text report: summary + decisions + actions + open questions
+python -m meeting_summarizer.cli report transcript.txt
+
+# Markdown minutes, or JSON for tooling
+python -m meeting_summarizer.cli report transcript.txt --format markdown
+python -m meeting_summarizer.cli report transcript.txt --format json
+```
+
+Action owners come from explicit assignment ("Assigned to Priya"),
+a named subject ("Priya will update ...") or a first-person
+commitment ("I will send ...", owned by the speaker); group
+commitments ("We need to ...") stay unassigned. Due phrases such as
+"by Friday" or "by end of week" are kept verbatim in the report.
+See `examples/report.py` for a worked report over
+`examples/actions-meeting.txt`.
 
 ## Tests
 
