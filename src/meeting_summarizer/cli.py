@@ -13,6 +13,7 @@ import json
 import sys
 
 from meeting_summarizer import __version__
+from meeting_summarizer.report import build_report, render_markdown
 from meeting_summarizer.segments import segment_transcript
 from meeting_summarizer.summarize import summarize
 from meeting_summarizer.transcript import parse_transcript
@@ -43,6 +44,32 @@ def _cmd_summarize(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_report(args: argparse.Namespace) -> int:
+    transcript = parse_transcript(_read_input(args.input))
+    report = build_report(transcript, max_sentences=args.max_sentences)
+    if args.format == "json":
+        print(json.dumps(report.to_dict(), indent=2))
+    elif args.format == "markdown":
+        print(render_markdown(report))
+    else:
+        print(report.summary.text())
+        if report.decisions:
+            print("\nDecisions:")
+            for decision in report.decisions:
+                print(f"- {decision.text} ({decision.speaker})")
+        if report.actions:
+            print("\nAction items:")
+            for action in report.actions:
+                owner = action.owner or "Unassigned"
+                due = f" (due: {action.due})" if action.due else ""
+                print(f"- [ ] {action.task} — {owner}{due}")
+        if report.questions:
+            print("\nOpen questions:")
+            for question in report.questions:
+                print(f"- {question.text} ({question.speaker})")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="meeting-summarizer")
     parser.add_argument("--version", action="store_true")
@@ -58,6 +85,17 @@ def build_parser() -> argparse.ArgumentParser:
         "--format", choices=("text", "json"), default="text"
     )
     summarize_parser.set_defaults(func=_cmd_summarize)
+    report_parser = sub.add_parser(
+        "report", help="full report: summary, decisions, actions, questions"
+    )
+    report_parser.add_argument("input", help="transcript file, or - for stdin")
+    report_parser.add_argument(
+        "--max-sentences", type=int, default=5, help="max summary sentences (default 5)"
+    )
+    report_parser.add_argument(
+        "--format", choices=("text", "markdown", "json"), default="text"
+    )
+    report_parser.set_defaults(func=_cmd_report)
     return parser
 
 
