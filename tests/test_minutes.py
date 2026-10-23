@@ -1,5 +1,7 @@
+import json
 from datetime import date
 
+from meeting_summarizer.cli import main
 from meeting_summarizer.minutes import render_minutes
 from meeting_summarizer.report import build_report
 from meeting_summarizer.transcript import parse_transcript
@@ -30,3 +32,27 @@ def test_minutes_without_date_keeps_due_phrases():
     minutes = render_minutes(build_report(transcript), transcript)
     assert "(due: friday)" in minutes
     assert "Date:" not in minutes
+
+
+def test_minutes_cli_writes_file_and_json(tmp_path, capsys):
+    path = tmp_path / "meeting.txt"
+    path.write_text(TRANSCRIPT, encoding="utf-8")
+    out_file = tmp_path / "minutes.md"
+    assert (
+        main(
+            [
+                "minutes",
+                str(path),
+                "--meeting-date",
+                "2026-10-19",
+                "--output",
+                str(out_file),
+            ]
+        )
+        == 0
+    )
+    assert "(due: 2026-10-23)" in out_file.read_text(encoding="utf-8")
+    assert main(["minutes", str(path), "--format", "json"]) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["speaker_stats"]
+    assert payload["follow_ups"][0]["owner"] == "Arjun"
