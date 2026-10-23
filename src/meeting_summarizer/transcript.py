@@ -4,7 +4,7 @@ Accepted line formats (one turn per line; unlabelled lines continue the
 previous turn)::
 
     [00:12:34] Priya: Let's ship the beta on Friday.
-    00:12 Priya: Let's ship the beta on Friday.
+    00:12 Priya: Let's ship the beta on Friday.   (MM:SS, video-style)
     Priya: Let's ship the beta on Friday.
     Let's ship the beta on Friday.          (continuation / unknown speaker)
 
