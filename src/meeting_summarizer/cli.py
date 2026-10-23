@@ -11,10 +11,13 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from datetime import date as _meeting_date
 
 from meeting_summarizer import __version__
+from meeting_summarizer.followups import group_by_owner
 from meeting_summarizer.minutes import render_minutes
 from meeting_summarizer.report import build_report, render_markdown
+from meeting_summarizer.stats import speaker_stats
 from meeting_summarizer.segments import segment_transcript
 from meeting_summarizer.summarize import summarize
 from meeting_summarizer.transcript import parse_transcript
@@ -72,15 +75,12 @@ def _cmd_report(args: argparse.Namespace) -> int:
 
 
 def _cmd_minutes(args: argparse.Namespace) -> int:
-    from datetime import date as _date
-
-    from meeting_summarizer.followups import group_by_owner
-    from meeting_summarizer.stats import speaker_stats
-
     transcript = parse_transcript(_read_input(args.input))
     report = build_report(transcript, max_sentences=args.max_sentences)
     meeting_date = (
-        _date.fromisoformat(args.meeting_date) if args.meeting_date else None
+        _meeting_date.fromisoformat(args.meeting_date)
+        if args.meeting_date
+        else None
     )
     if args.format == "json":
         payload = report.to_dict()
