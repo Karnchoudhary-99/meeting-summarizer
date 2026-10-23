@@ -42,6 +42,50 @@ class MeetingReport:
         }
 
 
+def _action_line(action: ActionItem) -> str:
+    owner = action.owner or "Unassigned"
+    line = f"- [ ] {action.task} — {owner}"
+    if action.due:
+        line += f" (due: {action.due})"
+    return line
+
+
+def render_markdown(report: MeetingReport) -> str:
+    """Render a report as Markdown minutes (summary/decisions/actions)."""
+    lines = ["# Meeting report", ""]
+    lines.append(f"Attendees: {', '.join(report.speakers) or 'Unknown'}")
+    lines.append(f"Turns: {report.turn_count}")
+    if report.duration_seconds is not None:
+        lines.append(f"Duration: {report.duration_seconds}s")
+    lines.append("")
+    lines.append("## Summary")
+    lines.append("")
+    lines.append(report.summary.text() or "_No summary available._")
+    lines.append("")
+    lines.append("## Decisions")
+    lines.append("")
+    if report.decisions:
+        lines.extend(f"- {d.text} ({d.speaker})" for d in report.decisions)
+    else:
+        lines.append("_None recorded._")
+    lines.append("")
+    lines.append("## Action items")
+    lines.append("")
+    if report.actions:
+        lines.extend(_action_line(a) for a in report.actions)
+    else:
+        lines.append("_None recorded._")
+    lines.append("")
+    lines.append("## Open questions")
+    lines.append("")
+    if report.questions:
+        lines.extend(f"- {q.text} ({q.speaker})" for q in report.questions)
+    else:
+        lines.append("_None recorded._")
+    lines.append("")
+    return "\n".join(lines)
+
+
 def build_report(transcript: Transcript, max_sentences: int = 5) -> MeetingReport:
     """Build a full report from a parsed transcript."""
     return MeetingReport(
