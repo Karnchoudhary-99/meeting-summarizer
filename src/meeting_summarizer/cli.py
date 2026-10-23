@@ -11,9 +11,13 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from datetime import date as _meeting_date
 
 from meeting_summarizer import __version__
+from meeting_summarizer.followups import group_by_owner
+from meeting_summarizer.minutes import render_minutes
 from meeting_summarizer.report import build_report, render_markdown
+from meeting_summarizer.stats import speaker_stats
 from meeting_summarizer.segments import segment_transcript
 from meeting_summarizer.summarize import summarize
 from meeting_summarizer.transcript import parse_transcript
@@ -70,6 +74,37 @@ def _cmd_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_minutes(args: argparse.Namespace) -> int:
+    transcript = parse_transcript(_read_input(args.input))
+    report = build_report(transcript, max_sentences=args.max_sentences)
+    meeting_date = (
+        _meeting_date.fromisoformat(args.meeting_date)
+        if args.meeting_date
+        else None
+    )
+    if args.format == "json":
+        payload = report.to_dict()
+        payload["meeting_date"] = (
+            meeting_date.isoformat() if meeting_date else None
+        )
+        payload["speaker_stats"] = [
+            s.to_dict() for s in speaker_stats(transcript)
+        ]
+        payload["follow_ups"] = [
+            {"owner": owner, "actions": [a.to_dict() for a in items]}
+            for owner, items in group_by_owner(report.actions)
+        ]
+        output = json.dumps(payload, indent=2)
+    else:
+        output = render_minutes(report, transcript, meeting_date=meeting_date)
+    if args.output:
+        with open(args.output, "w", encoding="utf-8") as handle:
+            handle.write(output if output.endswith("\n") else output + "\n")
+    else:
+        print(output)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="meeting-summarizer")
     parser.add_argument("--version", action="store_true")
@@ -96,6 +131,25 @@ def build_parser() -> argparse.ArgumentParser:
         "--format", choices=("text", "markdown", "json"), default="text"
     )
     report_parser.set_defaults(func=_cmd_report)
+    minutes_parser = sub.add_parser(
+        "minutes", help="shareable Markdown minutes for a transcript"
+    )
+    minutes_parser.add_argument("input", help="transcript file, or - for stdin")
+    minutes_parser.add_argument(
+        "--max-sentences", type=int, default=5, help="max summary sentences (default 5)"
+    )
+    minutes_parser.add_argument(
+        "--format", choices=("markdown", "json"), default="markdown"
+    )
+    minutes_parser.add_argument(
+        "--meeting-date",
+        default=None,
+        help="meeting date as YYYY-MM-DD, for resolving due phrases",
+    )
+    minutes_parser.add_argument(
+        "--output", default=None, help="write minutes to this file instead of stdout"
+    )
+    minutes_parser.set_defaults(func=_cmd_minutes)
     return parser
 
 

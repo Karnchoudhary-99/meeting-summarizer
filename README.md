@@ -82,6 +82,25 @@ commitments ("We need to ...") stay unassigned. Due phrases such as
 See `examples/report.py` for a worked report over
 `examples/actions-meeting.txt`.
 
+## Minutes
+
+The `minutes` command turns a report into a shareable document:
+follow-ups grouped by owner, a speaker-statistics table, and — when
+you pass the meeting date — due phrases resolved to real dates.
+
+```bash
+# Markdown minutes on stdout, or to a file
+python -m meeting_summarizer.cli minutes transcript.txt
+python -m meeting_summarizer.cli minutes transcript.txt --meeting-date 2026-10-19 --output minutes.md
+
+# JSON minutes (report + speaker stats + grouped follow-ups)
+python -m meeting_summarizer.cli minutes transcript.txt --format json
+```
+
+Talk time is estimated from turn timestamps (a turn runs until the
+next one starts; the final turn contributes no time, and meetings
+without timestamps report no time at all). See `examples/minutes.py`.
+
 ## Tests
 
 ```bash
