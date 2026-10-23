@@ -27,8 +27,9 @@ _WEEKDAY_ALT = "|".join(_WEEKDAYS)
 
 # "Assigned to Priya", "assign it to Arjun", "for Sara to draft".
 _ASSIGN_RE = re.compile(
-    r"\bassign(?:ed|ing)?(?:\s+it)?\s+to\s+([A-Z][a-z]+)\b"
+    r"\bassign(?:ed|ing)?(?:\s+it)?\s+to\s+([A-Z][a-z]+)\b", re.IGNORECASE
 )
+_PRONOUNS = frozenset({"We", "You", "He", "She", "They", "It"})
 # "Priya will update ...", "Arjun to review ...", "Sara should send ...".
 _NAMED_OWNER_RE = re.compile(
     r"\b([A-Z][a-z]+)\s+(?:will|to|should|needs?\s+to|has\s+to)\b"
@@ -75,9 +76,10 @@ def extract_owner(sentence: str, speaker: str) -> str | None:
     if assigned:
         return assigned.group(1)
     named = _NAMED_OWNER_RE.search(sentence)
-    if named:
+    if named and named.group(1) not in _PRONOUNS:
         # A named subject ("Priya will ...") is the owner whether Priya
-        # says it herself or someone else assigns it in passing.
+        # says it herself or someone else assigns it in passing. "We
+        # need to ..." names no single owner, so pronouns are skipped.
         return named.group(1)
     if re.search(r"\bI\s+(?:will|need to|should|have to)\b", sentence):
         return speaker
