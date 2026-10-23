@@ -1,0 +1,13 @@
+[00:00:05] Priya: Welcome everyone, um, let's get started with the launch review.
+[00:00:18] Priya: The beta launch is scheduled for Friday and the release checklist is nearly complete.
+[00:00:41] Arjun: The beta deployment pipeline is ready and the staging environment passed all smoke tests.
+[00:01:02] Arjun: We still need to finish the database migration before the beta launch on Friday.
+[00:01:20] Priya: The migration runbook is written and the rollback plan is tested, so the migration risk is low.
+[00:01:47] Sara: On pricing, the team agreed the starter plan stays at nine dollars and the pro plan moves to twenty-nine dollars.
+[00:02:10] Sara: The pricing page needs updated copy before the beta launch, and the annual discount is twenty percent.
+[00:02:33] Arjun: You know, the pricing change needs a billing migration too, but that is a separate release.
+[00:02:51] Priya: For hiring, we have two open support roles and interviews start next week.
+[00:03:12] Sara: The support rota for launch week is drafted and weekend cover is still unassigned.
+[00:03:35] Arjun: I mean, weekend cover can rotate between the support team and the engineering on-call.
+[00:03:58] Priya: So to recap, the beta launches Friday after the migration, pricing updates ship with the new page copy,
+and support cover for launch week still needs an owner.
