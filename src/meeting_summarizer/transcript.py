@@ -56,7 +56,12 @@ def clean_text(text: str) -> str:
     cleaned = _SPACE_BEFORE_PUNCT.sub(r"\1", cleaned)
     cleaned = _MULTI_SPACE.sub(" ", cleaned).strip()
     # A leading comma left behind by a removed filler ("um, hello" -> ", hello").
-    return cleaned.lstrip(", ").strip()
+    cleaned = cleaned.lstrip(", ").strip()
+    # Filler removal can decapitate a turn ("You know, the plan..." ->
+    # "the plan..."); restore the initial capital.
+    if cleaned:
+        cleaned = cleaned[0].upper() + cleaned[1:]
+    return cleaned
 
 
 def _parse_timestamp(token: str) -> int:

@@ -63,7 +63,7 @@ class Segment:
 def segment_transcript(
     turns: list[SpeakerTurn],
     window: int = 2,
-    threshold: float = 0.12,
+    threshold: float = 0.08,
     min_turns: int = 2,
 ) -> list[Segment]:
     """Split turns into topic segments.

@@ -29,10 +29,10 @@ def test_leading_unlabelled_line_becomes_unknown():
 
 
 def test_filler_cleanup_removes_interjections_only():
-    assert clean_text("Um, we should, uh, ship it.") == "we should, ship it."
+    assert clean_text("Um, we should, uh, ship it.") == "We should, ship it."
     # Real words are untouched: "like" is a verb, "humble" contains no filler.
     assert clean_text("I like this humble plan.") == "I like this humble plan."
-    assert clean_text("You know, I mean, let's go.") == "let's go."
+    assert clean_text("You know, I mean, let's go.") == "Let's go."
 
 
 def test_speakers_in_first_appearance_order():
