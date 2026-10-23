@@ -86,6 +86,75 @@ def extract_owner(sentence: str, speaker: str) -> str | None:
     return None
 
 
+_SENTENCE_RE = re.compile(r"[^.!?]+[.!?]+(?:\s+|$)")
+_ACTION_RE = re.compile(
+    r"\b(?:"
+    r"will\s+\w+|need(?:s)?\s+to|has\s+to|have\s+to|should\s+\w+"
+    r"|assigned\s+to|assign(?:ed|ing)?(?:\s+it)?\s+to"
+    r"|action\s*:|follow\s+up|to\s+do"
+    r")\b",
+    re.IGNORECASE,
+)
+# Verbs that, in imperative form at a sentence start, commit an action.
+_IMPERATIVE_VERBS = frozenset(
+    "send update finish complete draft prepare check review fix write "
+    "share publish deploy test ship schedule book arrange call email".split()
+)
+_CLEAN_PREFIXES = (
+    r"^(?:assigned to [A-Z][a-z]+:\s*)?",
+    r"^(?:action:\s*)?",
+    r"^(?:please\s+)?",
+    r"^(?:[A-Z][a-z]+\s+will\s+)?",
+    r"^(?:i\s+will\s+)?",
+    r"^(?:we\s+(?:still\s+)?need\s+to\s+)?",
+    r"^(?:we\s+should\s+)?",
+    r"^(?:let's\s+)?",
+)
+
+
+def _clean_task(sentence: str) -> str:
+    """Strip commitment framing and due clauses, leaving the task."""
+    task = sentence.strip().rstrip(".!?")
+    for prefix in _CLEAN_PREFIXES:
+        task = re.sub(prefix, "", task, flags=re.IGNORECASE)
+    # Drop a trailing due clause ("... by Friday", "... on Friday").
+    task = _DUE_RE.sub("", task).strip().rstrip(", ")
+    # A trailing "before the beta launch" style clause is not a due
+    # phrase for our regex, but it is not part of the task either.
+    task = re.sub(r"\s+before\s+the\s+.*$", "", task, flags=re.IGNORECASE)
+    task = re.sub(r"\s+on\s+(?:" + _WEEKDAY_ALT + r")$", "", task, flags=re.IGNORECASE)
+    return task.strip()
+
+
+def _is_action_sentence(sentence: str) -> bool:
+    if _ACTION_RE.search(sentence):
+        return True
+    first = sentence.strip().split(" ", 1)[0].lower().strip(".,!?")
+    return first in _IMPERATIVE_VERBS
+
+
+def extract_actions(transcript) -> list[ActionItem]:
+    """Extract action items from every turn, in meeting order."""
+    items: list[ActionItem] = []
+    for turn in transcript.turns:
+        for sentence in _SENTENCE_RE.findall(turn.text):
+            sentence = sentence.strip()
+            if not sentence or not _is_action_sentence(sentence):
+                continue
+            task = _clean_task(sentence)
+            if len(task) < 3:
+                continue
+            items.append(
+                ActionItem(
+                    task=task,
+                    owner=extract_owner(sentence, turn.speaker),
+                    due=extract_due(sentence),
+                    speaker=turn.speaker,
+                )
+            )
+    return items
+
+
 def extract_due(sentence: str) -> str | None:
     """Return the due phrase ("Friday", "end of week") or None."""
     match = _DUE_RE.search(sentence)
